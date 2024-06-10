@@ -38,8 +38,14 @@ def main():
     start_index = find_start(lines)
     end_index = find_end(lines)
 
+    split_lines = []
     for j in range(start_index+1, end_index):
-        print(re.split(r"  +", lines[j]))
+        split_lines += [re.split(r"  +", lines[j])]
 
+    print(split_lines)
+
+    lines_without_pfand = list(filter(lambda x: "PFAND" not in x[0] and x[0] != '', split_lines))
+    print(lines_without_pfand)
+    
 if __name__ == "__main__":
     main()
