@@ -9,6 +9,7 @@ def find_start(lines):
             return i
     return -1
 
+
 def find_end(lines):
     '''Find the line where the actual receipt data ends'''
     for i, line in enumerate(lines):
@@ -29,11 +30,11 @@ def main():
     page = reader.pages[0]
 
     # extracting text from page
-    #print(page.extract_text())
+    # print(page.extract_text())
     text = page.extract_text()
 
     lines = text.split("\n")
-    #print(text.split("\n"))
+    # print(text.split("\n"))
 
     start_index = find_start(lines)
     end_index = find_end(lines)
@@ -44,8 +45,10 @@ def main():
 
     print(split_lines)
 
-    lines_without_pfand = list(filter(lambda x: "PFAND" not in x[0] and x[0] != '', split_lines))
+    lines_without_pfand = list(
+        filter(lambda x: "PFAND" not in x[0] and x[0] != '', split_lines))
     print(lines_without_pfand)
-    
+
+
 if __name__ == "__main__":
     main()
