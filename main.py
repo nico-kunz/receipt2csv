@@ -1,4 +1,5 @@
 import re
+from os import listdir, makedirs
 import csv
 from pypdf import PdfReader
 
@@ -21,9 +22,9 @@ def find_end(lines):
     return -1
 
 
-def export_to_csv(data):
+def export_to_csv(file_name, data):
     '''Export receipt data to csv file'''
-    with open('receipt.csv', mode='w', encoding="utf-8") as csvfile:
+    with open("output/" + file_name, mode='w', encoding="utf-8") as csvfile:
         writer = csv.writer(csvfile, delimiter=',',
                             quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(["Product", "Price", "Together", PERSON1, PERSON2])
@@ -33,18 +34,16 @@ def export_to_csv(data):
         writer.writerow(["","","","","", PERSON2, "=SUM(E:E) + SUM(C:C)/2"])
 
 
-def main():
-    '''Main function to extract data from a pdf file'''
+def extract_from_file(file): 
+    '''Extract data from a pdf file'''
     # creating a pdf reader object
-    reader = PdfReader('pdfs/REWE-eBon.pdf')
-
-    # printing number of pages in pdf file
+    reader = PdfReader(file)
     print(len(reader.pages))
 
-    # creating a page object
+    # create page object
     page = reader.pages[0]
 
-    # extracting text from page
+    # extract text from page
     text = page.extract_text()
 
     lines = text.split("\n")
@@ -74,8 +73,19 @@ def main():
             lines_without_pfand[i][1] = re.sub(r"[a-zA-Z]|\s", "", line[1])
 
     print(lines_without_pfand)
-    export_to_csv(lines_without_pfand)
+    export_to_csv(str.split(str.split(file, '/')[-1], '.')[0] + ".csv", lines_without_pfand)
 
+
+
+def main():
+    '''Main function, extracts data from all files in the pdfs/ folder'''
+    files = [f for f in listdir("pdfs/") if f.endswith(".pdf")]
+
+    # create output dir if not exists
+    makedirs("output", exist_ok=True)
+
+    for file in files:
+        extract_from_file("pdfs/" + file)
 
 if __name__ == "__main__":
     main()
