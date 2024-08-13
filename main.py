@@ -6,6 +6,7 @@ from pypdf import PdfReader
 PERSON1 = "Name1"
 PERSON2 = "Name2"
 
+
 def find_start(lines):
     '''Find the line where the actual receipt data starts'''
     for i, line in enumerate(lines):
@@ -29,12 +30,14 @@ def export_to_csv(file_name, data):
                             quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(["Product", "Price", "Together", PERSON1, PERSON2])
         writer.writerows(data)
-        writer.writerow(["","","","","", "Together", "=SUM(C:C)"])
-        writer.writerow(["","","","","", PERSON1, "=SUM(D:D) + SUM(C:C)/2"])
-        writer.writerow(["","","","","", PERSON2, "=SUM(E:E) + SUM(C:C)/2"])
+        writer.writerow(["", "", "", "", "", "Together", "=SUM(C:C)"])
+        writer.writerow(["", "", "", "", "", PERSON1,
+                        "=SUM(D:D) + SUM(C:C)/2"])
+        writer.writerow(["", "", "", "", "", PERSON2,
+                        "=SUM(E:E) + SUM(C:C)/2"])
 
 
-def extract_from_file(file): 
+def extract_from_file(file):
     '''Extract data from a pdf file'''
     # creating a pdf reader object
     reader = PdfReader(file)
@@ -73,8 +76,8 @@ def extract_from_file(file):
             lines_without_pfand[i][1] = re.sub(r"[a-zA-Z]|\s", "", line[1])
 
     print(lines_without_pfand)
-    export_to_csv(str.split(str.split(file, '/')[-1], '.')[0] + ".csv", lines_without_pfand)
-
+    export_to_csv(str.split(str.split(file, '/')
+                  [-1], '.')[0] + ".csv", lines_without_pfand)
 
 
 def main():
@@ -86,6 +89,7 @@ def main():
 
     for file in files:
         extract_from_file("pdfs/" + file)
+
 
 if __name__ == "__main__":
     main()
