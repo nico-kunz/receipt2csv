@@ -10,7 +10,7 @@ PERSON2 = "Name2"
 def find_start(lines):
     '''Find the line where the actual receipt data starts'''
     for i, line in enumerate(lines):
-        if re.match(r" *EUR$", line):
+        if re.search(r"\d+,\d{2}", line):
             return i
     return -1
 
@@ -18,7 +18,7 @@ def find_start(lines):
 def find_end(lines):
     '''Find the line where the actual receipt data ends'''
     for i, line in enumerate(lines):
-        if re.match(r" *-+", line):
+        if re.search(r" *--+", line) or re.search(r" *SUMME", line):
             return i
     return -1
 
@@ -55,7 +55,7 @@ def extract_from_file(file):
     end_index = find_end(lines)
 
     split_lines = []
-    for j in range(start_index+1, end_index):
+    for j in range(start_index, end_index):
         split_lines += [re.split(r"  +", lines[j])]
 
     # remove items that detail amount of product
