@@ -1,7 +1,8 @@
 import re
-from os import listdir, makedirs
+from os import listdir, makedirs, path
 import csv
 from pypdf import PdfReader
+import argparse
 
 PERSON1 = "Name1"
 PERSON2 = "Name2"
@@ -54,6 +55,10 @@ def extract_from_file(file):
     start_index = find_start(lines)
     end_index = find_end(lines)
 
+    if start_index == -1 or end_index == -1:
+        print("Could not find start or end of receipt data for file: " + file)
+        return
+
     split_lines = []
     for j in range(start_index, end_index):
         split_lines += [re.split(r"  +", lines[j])]
@@ -82,13 +87,21 @@ def extract_from_file(file):
 
 def main():
     '''Main function, extracts data from all files in the pdfs/ folder'''
-    files = [f for f in listdir("pdfs/") if f.endswith(".pdf")]
+
+    argparser = argparse.ArgumentParser(description="Extract receipt data from pdf files")
+    argparser.add_argument("-f", "--file", help="Extract data from a file or folder", required=True)
+    args = argparser.parse_args()
+    
+    if path.isdir(args.file):   
+        files = listdir(args.file)
+    else:
+        files = [args.file]
 
     # create output dir if not exists
     makedirs("output", exist_ok=True)
 
     for file in files:
-        extract_from_file("pdfs/" + file)
+        extract_from_file(file)
 
 
 if __name__ == "__main__":
