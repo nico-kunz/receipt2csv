@@ -73,13 +73,12 @@ def extract_from_file(file):
 
     split_lines: list[list[str]] = []
     for i in range(start_index, end_index):
-        split_lines += list(extract_from_line(lines[i]))
+        split_lines.append(list(extract_from_line(lines[i])))
 
     # remove items that detail amount of product
     for i, line in enumerate(split_lines):
         match = re.match("\d\s+(?:Stk)?\s+x", line[0])
         if match:
-            print("MATCH",  split_lines[i][1] + " " + split_lines[i - 1][0])
             split_lines[i - 1][0] = split_lines[i][0].split("x")[0] + "x " + split_lines[i - 1][0]
             removed = split_lines.pop(i)
             debug_print(removed)
