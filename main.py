@@ -4,12 +4,9 @@ import csv
 from pypdf import PdfReader
 import argparse
 
-PERSON1 = "Name1"
-PERSON2 = "Name2"
-
 
 def debug_print(*args):
-    if verbose:
+    if VERBOSE:
         print(*args)
 
 
@@ -79,7 +76,7 @@ def extract_from_file(file):
     for i in range(start_index, end_index):
         split_lines.append(list(extract_from_line(lines[i])))
 
-    # remove items that detail amount of product
+    # remove items that detail amount of product, e.g. "1 (Stk) x ..."
     for i, line in enumerate(split_lines):
         match = re.match("\d\s+(?:Stk)?\s+x", line[0])
         if match:
@@ -89,21 +86,20 @@ def extract_from_file(file):
             removed = split_lines.pop(i)
             debug_print(removed)
 
-    # remove lines that contain "PFAND"
+    # remove lines that contain pfand
     pfand_keywords = ["PFAND", "LEERGUT"]
     lines_without_pfand = [
         line
         for line in split_lines
         if not any(keyword in line[0] for keyword in pfand_keywords)
     ]
-
     debug_print(lines_without_pfand)
-    export_to_csv(
-        str.split(str.split(file, "/")[-1], ".")[0] + ".csv", lines_without_pfand
-    )
+
+    export_to_csv(file.split("/")[-1].split(".")[0] + ".csv", lines_without_pfand)
 
 
 def main():
+    global VERBOSE, PERSON1, PERSON2
     """Main function, extracts data from all files in the pdfs/ folder"""
 
     argparser = argparse.ArgumentParser(
@@ -112,9 +108,13 @@ def main():
     argparser.add_argument(
         "-f", "--file", help="Extract data from a file or folder", required=True
     )
-
-    argparser.add_argument("-p", "--persons", help="Names of the persons", nargs=2)
-
+    argparser.add_argument(
+        "-p",
+        "--persons",
+        help="Names of the persons",
+        nargs=2,
+        default=("Name1", "Name2"),
+    )
     argparser.add_argument(
         "-v",
         "--verbose",
@@ -125,13 +125,8 @@ def main():
 
     args = argparser.parse_args()
 
-    global PERSON1, PERSON2
-
-    if args.persons:
-        PERSON1, PERSON2 = args.persons
-
-    global verbose
-    verbose = args.verbose
+    PERSON1, PERSON2 = args.persons
+    VERBOSE = args.verbose
 
     if path.isdir(args.file):
         files = [
