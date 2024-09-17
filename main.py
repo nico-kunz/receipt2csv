@@ -100,9 +100,10 @@ def main():
         "-f", "--file", help="Extract data from a file or folder", required=True
     )
     args = argparser.parse_args()
+    print(path.join(args.file, "output"))
 
     if path.isdir(args.file):
-        files = listdir(args.file)
+        files = [ path.join(args.file, f) for f in listdir(args.file) if f.endswith(".pdf") ]
     else:
         files = [args.file]
 
