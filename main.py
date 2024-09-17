@@ -36,6 +36,16 @@ def export_to_csv(file_name, data):
         writer.writerow(["", "", "", "", "", PERSON1, "=SUM(D:D) + SUM(C:C)/2"])
         writer.writerow(["", "", "", "", "", PERSON2, "=SUM(E:E) + SUM(C:C)/2"])
 
+def extract_from_line(line: str):
+    """Extract product and price from a line"""
+    matches = re.findall(r"-?\d+,\d{2}", line)
+    if len(matches) == 0:
+        return "", ""
+    
+    # only use price match at the end of the line
+    price = matches[-1]
+    product = line.split(price)[0].strip()
+    return product, price
 
 def extract_from_file(file):
     """Extract data from a pdf file"""
@@ -58,23 +68,21 @@ def extract_from_file(file):
         print("Could not find start or end of receipt data for file: " + file)
         return
 
-    split_lines = []
-    for j in range(start_index, end_index):
-        split_lines += [re.split(r"  +", lines[j])]
+    split_lines: list[list[str]] = []
+    for i in range(start_index, end_index):
+        split_lines += list(extract_from_line(lines[i]))
 
     # remove items that detail amount of product
     for i, line in enumerate(split_lines):
-        if line[0] == "":
-            split_lines[i - 1][0] = split_lines[i][1] + " " + split_lines[i - 1][0]
+        match = re.match("\d\s+(?:Stk)?\s+x", line[0])
+        if match:
+            print("MATCH",  split_lines[i][1] + " " + split_lines[i - 1][0])
+            split_lines[i - 1][0] = split_lines[i][0].split("x")[0] + "x " + split_lines[i - 1][0]
             print(split_lines.pop(i))
 
     # remove lines that contain "PFAND"
-    lines_without_pfand = list(filter(lambda x: "PFAND" not in x[0], split_lines))
-
-    # filter out letters at the end of price
-    for i, line in enumerate(lines_without_pfand):
-        if re.match(r"\d+,\d{2}", line[1]):
-            lines_without_pfand[i][1] = re.sub(r"[a-zA-Z]|\s", "", line[1])
+    pfand_keywords = ["PFAND", "LEERGUT"]
+    lines_without_pfand = [line for line in split_lines if not any(keyword in line[0] for keyword in pfand_keywords)]
 
     print(lines_without_pfand)
     export_to_csv(
