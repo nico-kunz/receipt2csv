@@ -7,6 +7,9 @@ import argparse
 PERSON1 = "Name1"
 PERSON2 = "Name2"
 
+def debug_print(*args):
+    if verbose:
+        print(*args)
 
 def find_start(lines):
     """Find the line where the actual receipt data starts"""
@@ -51,7 +54,7 @@ def extract_from_file(file):
     """Extract data from a pdf file"""
     # creating a pdf reader object
     reader = PdfReader(file)
-    print(len(reader.pages))
+    debug_print(len(reader.pages))
 
     # create page object
     page = reader.pages[0]
@@ -78,13 +81,14 @@ def extract_from_file(file):
         if match:
             print("MATCH",  split_lines[i][1] + " " + split_lines[i - 1][0])
             split_lines[i - 1][0] = split_lines[i][0].split("x")[0] + "x " + split_lines[i - 1][0]
-            print(split_lines.pop(i))
+            removed = split_lines.pop(i)
+            debug_print(removed)
 
     # remove lines that contain "PFAND"
     pfand_keywords = ["PFAND", "LEERGUT"]
     lines_without_pfand = [line for line in split_lines if not any(keyword in line[0] for keyword in pfand_keywords)]
 
-    print(lines_without_pfand)
+    debug_print(lines_without_pfand)
     export_to_csv(
         str.split(str.split(file, "/")[-1], ".")[0] + ".csv", lines_without_pfand
     )
@@ -99,8 +103,21 @@ def main():
     argparser.add_argument(
         "-f", "--file", help="Extract data from a file or folder", required=True
     )
+
+    argparser.add_argument("-p", "--persons", help="Names of the persons", nargs=2)
+
+    argparser.add_argument("-v", "--verbose", help="Increase output verbosity", action="store_true", default=False)
+
     args = argparser.parse_args()
-    print(path.join(args.file, "output"))
+
+    global PERSON1, PERSON2
+
+    if args.persons:
+        PERSON1, PERSON2 = args.persons
+
+    
+    global verbose
+    verbose = args.verbose
 
     if path.isdir(args.file):
         files = [ path.join(args.file, f) for f in listdir(args.file) if f.endswith(".pdf") ]
