@@ -17,7 +17,7 @@ python main.py -f <folder_path/pdf_path>
 ``-f`` or ``--file``: Path to a specific file or folder containing PDF receipts. Required parameter.  
 Example: ``python main.py -f pdfs/``
 
-``-p`` or ``--persons``: Specify two person names for splitting costs.  
-Example: ``python main.py -f pdfs/ -p "Person1" "Person2"``. Defaults to "Name1" and "Name2".
+``-n`` or ``--names``: Specify two person names for splitting costs.  
+Example: ``python main.py -f pdfs/ -n "Person1" "Person2"``. Defaults to "Name1" and "Name2".
 
 ``-v`` or ``--verbose``: Enable verbose output for debugging purpose
