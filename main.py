@@ -3,6 +3,8 @@ import csv
 import re
 from os import listdir, makedirs, path
 
+
+from dateutil import parser
 from pypdf import PdfReader
 
 
@@ -52,7 +54,7 @@ def extract_from_line(line: str):
     return product, price
 
 
-def extract_from_file(file):
+def extract_from_file(file, generate_filenames: bool = True):
     """Extract data from a pdf file"""
     # creating a pdf reader object
     reader = PdfReader(file)
@@ -96,8 +98,33 @@ def extract_from_file(file):
         if not any(keyword in line[0] for keyword in pfand_keywords)
     ]
     debug_print(lines_without_pfand)
+    
+    if generate_filenames:
+        file = generate_output_filename(file)
+    else:
+        file = file.split("/")[-1].split(".")[0] + ".csv"
 
-    export_to_csv(file.split("/")[-1].split(".")[0] + ".csv", lines_without_pfand)
+
+    export_to_csv(file, lines_without_pfand)
+
+
+def generate_output_filename(filename: str):
+    """
+    Generate output filename based on the input filename.
+    """
+    
+    # Find duplicate Number
+    m = re.search(r"(\(\d+\))", filename)
+    found = ""
+    if m:
+        found = m.group(0)
+        debug_print(found)
+        filename = filename.replace(found, "")
+
+    # extract date
+    date: str = parser.parse(filename, fuzzy=True).strftime("%Y-%m-%d")
+
+    return date + found + ".csv"
 
 
 def main():
@@ -111,11 +138,16 @@ def main():
         "-f", "--file", help="Extract data from a file or folder", required=True
     )
     argparser.add_argument(
-        "-p",
-        "--persons",
+        "-n",
+        "--names",
         help="Names of the persons",
         nargs=2,
         default=("Name1", "Name2"),
+    )
+    argparser.add_argument(
+        "-g",
+        "--generate-filename",
+        help="Generate a filename for the output depending on input name. Will look for a date and respect duplicate files"
     )
     argparser.add_argument(
         "-v",
@@ -124,10 +156,9 @@ def main():
         action="store_true",
         default=False,
     )
-
     args = argparser.parse_args()
 
-    PERSON1, PERSON2 = args.persons
+    PERSON1, PERSON2 = args.names
     VERBOSE = args.verbose
 
     if path.isdir(args.file):
