@@ -91,7 +91,14 @@ def extract_from_file(file, generate_filenames: bool = True):
                 split_lines[i][0].split("x")[0] + "x " + split_lines[i - 1][0]
             )
             removed = split_lines.pop(i)
-            debug_print(removed)
+            debug_print("amount match", removed)
+
+    # remove items that detail price for weight of product, e.g. "0,160 kg x"
+    for i, line in enumerate(split_lines):
+        match = re.match(r".*(kg|g|l|ml)\s+x", line[0])
+        if match:
+            removed = split_lines.pop(i)
+            debug_print("kg match", removed)
 
     # remove lines that contain pfand
     pfand_keywords = ["PFAND", "LEERGUT"]
