@@ -1,8 +1,9 @@
+import argparse
+import csv
 import re
 from os import listdir, makedirs, path
-import csv
+
 from pypdf import PdfReader
-import argparse
 
 
 def debug_print(*args):
@@ -32,8 +33,8 @@ def export_to_csv(file_name, data):
         writer = csv.writer(
             csvfile, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL
         )
-        writer.writerow(["Product", "Price", "Together", PERSON1, PERSON2])
-        writer.writerows(data)
+        writer.writerow(["Product", "Price", "Together", PERSON1, PERSON2, None, None])
+        writer.writerows(map(lambda x: x + [None, None, None, None, None],data))
         writer.writerow(["", "", "", "", "", "Together", "=SUM(C:C)"])
         writer.writerow(["", "", "", "", "", PERSON1, "=SUM(D:D) + SUM(C:C)/2"])
         writer.writerow(["", "", "", "", "", PERSON2, "=SUM(E:E) + SUM(C:C)/2"])
@@ -61,6 +62,7 @@ def extract_from_file(file):
     page = reader.pages[0]
 
     # extract text from page
+    # pylint: disable=no-member
     text = page.extract_text()
 
     lines = text.split("\n")
@@ -78,7 +80,7 @@ def extract_from_file(file):
 
     # remove items that detail amount of product, e.g. "1 (Stk) x ..."
     for i, line in enumerate(split_lines):
-        match = re.match("\d\s+(?:Stk)?\s+x", line[0])
+        match = re.match(r"\d\s+(?:Stk)?\s+x", line[0])
         if match:
             split_lines[i - 1][0] = (
                 split_lines[i][0].split("x")[0] + "x " + split_lines[i - 1][0]
