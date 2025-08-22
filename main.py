@@ -65,7 +65,10 @@ def extract_from_file(file, generate_filenames: bool = True):
 
     # extract text from page
     # pylint: disable=no-member
-    text = page.extract_text()
+    text = ""
+    for i in range(min(3, len(reader.pages))):
+        page = reader.pages[i]
+        text += page.extract_text()
 
     lines = text.split("\n")
 
