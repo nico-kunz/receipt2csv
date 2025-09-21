@@ -60,15 +60,15 @@ def extract_from_file(file, generate_filenames: bool = True):
     reader = PdfReader(file)
     debug_print(len(reader.pages))
 
-    # create page object
-    page = reader.pages[0]
-
     # extract text from page
     # pylint: disable=no-member
     text = ""
     for i in range(min(3, len(reader.pages))):
         page = reader.pages[i]
         text += page.extract_text()
+        # if last character is not new line for some reason, add new line
+        if text and text[-1] != "\n":
+            text += "\n"
 
     lines = text.split("\n")
 
@@ -132,7 +132,7 @@ def generate_output_filename(filename: str):
         filename = filename.replace(found, "")
 
     # extract date
-    date: str = parser.parse(filename, fuzzy=True).strftime("%Y-%m-%d")
+    date: str = parser.parse(filename, dayfirst=True, fuzzy=True).strftime("%Y-%m-%d")
 
     return date + found + ".csv"
 
